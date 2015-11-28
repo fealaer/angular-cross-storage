@@ -1,0 +1,26 @@
+{
+  "name": "angular-cross-storage",
+  "homepage": "https://github.com/fealaer/angular-cross-storage",
+  "authors": [
+    "Andrey Pushkarev <fealaer@gmail.com>"
+  ],
+  "description": "AngularJS wrapper around ZenDesk Cross-Storage library, which provides Cross Domain Local Storage solution",
+  "keywords": [
+    "local",
+    "storage",
+    "cross",
+    "domain",
+    "angularjs"
+  ],
+  "license": "Apache-2.0",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "angular": ">=1.0.8"
+  }
+}
