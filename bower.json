@@ -21,6 +21,7 @@
     "tests"
   ],
   "dependencies": {
-    "angular": ">=1.0.8"
+    "angular": ">=1.0.8",
+    "cross-storage": ">=0.8.1"
   }
 }
