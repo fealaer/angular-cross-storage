@@ -15,23 +15,25 @@
     function connect() {
       var deferred = $q.defer()
         , caller = 'connect';
-      if (CrossStorageClient) {
-        var storage = new CrossStorageClient(url, opts);
-        storage
-          .onConnect()
-          .then(function () {
-            var msg = 'Cross Local Storage Connected to URL ' + url;
-            resolve(deferred, caller, msg, null, opts);
-            _storage = storage;
-          })
-          .catch(function (err) {
-            var msg = 'Could not connect to the Cross Domain Local Storage Hub on URL ' + url;
-            rejectWithError(deferred, caller, err, msg);
-          });
-      } else {
-        var err = 'Error: angular-cross-storage module depends on ZenDesk Cross-Storage Library';
-        rejectWithError(deferred, caller, err);
-      }
+      angular.element(document).ready(function () {
+        if (CrossStorageClient) {
+          var storage = new CrossStorageClient(url, opts);
+          storage
+            .onConnect()
+            .then(function () {
+              var msg = 'Cross Local Storage Connected to URL ' + url;
+              resolve(deferred, caller, msg, null, opts);
+              _storage = storage;
+            })
+            .catch(function (err) {
+              var msg = 'Could not connect to the Cross Domain Local Storage Hub on URL ' + url;
+              rejectWithError(deferred, caller, err, msg);
+            });
+        } else {
+          var err = 'Error: angular-cross-storage module depends on ZenDesk Cross-Storage Library';
+          rejectWithError(deferred, caller, err);
+        }
+      });
       return deferred.promise;
     }
 
@@ -148,6 +150,7 @@
   CrossDomainStorageProvider.$inject = [];
   /* @ngInject */
   function CrossDomainStorageProvider() {
+    var $log =  angular.injector(['ng']).get('$log');
     var vm = this
       , _url
       , _opts = {};
@@ -162,7 +165,7 @@
       if (opts.url) {
         _url = opts.url;
       } else {
-        console.log('You should specify option url -- The URL to a cross storage hub');
+        $log.error('You should specify option url -- The URL to a cross storage hub');
       }
     }
 
