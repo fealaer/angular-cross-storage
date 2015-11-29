@@ -1,0 +1,49 @@
+<html ng-app="angular-cross-storage-test">
+<head>
+	<script src="bower_components/cross-storage/dist/client.js"></script>
+	<script src="bower_components/angular/angular.js"></script>
+	<script src="js/angular-cross-storage.js"></script>
+	<script type="text/javascript">
+		angular.module('angular-cross-storage-test', ['angular-cross-storage'])
+			.config(['CrossDomainStorageProvider', '$logProvider', function (CrossDomainStorageProvider, $logProvider) {
+				$logProvider.debugEnabled(true);
+				CrossDomainStorageProvider.setOptions({
+					url: 'http://localhost:3000/hub.html',
+					timeout: 20000,
+					frameId: 'cross-storage-frame'
+				});
+			}])
+			.run(['CrossDomainStorage', function (CrossDomainStorage) {
+				CrossDomainStorage.connect();
+			}])
+			.controller('MainCtrl', ['CrossDomainStorage', function (CrossDomainStorage) {
+				var vm = this;
+				vm.setValue = function () {
+					CrossDomainStorage.set('angular-test', 'angular-test')
+						.then(function (res) {
+							console.log(res);
+						});
+				};
+
+				vm.getValue = function () {
+					CrossDomainStorage.get('angular-test')
+						.then(function (res) {
+							console.log(res);
+						});
+				};
+
+				vm.delValue = function () {
+					CrossDomainStorage.del('angular-test')
+						.then(function (res) {
+							console.log(res);
+						});
+				};
+			}]);
+	</script>
+</head>
+<body ng-controller="MainCtrl as main">
+<button ng-click="main.setValue()">Set Value</button>
+<button ng-click="main.getValue()">Get Value</button>
+<button ng-click="main.delValue()">Del Value</button>
+</body>
+</html>
