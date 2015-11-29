@@ -1,6 +1,7 @@
 {
   "name": "angular-cross-storage",
   "homepage": "https://github.com/fealaer/angular-cross-storage",
+  "main": "js/angular-cross-storage.js",
   "authors": [
     "Andrey Pushkarev <fealaer@gmail.com>"
   ],
