@@ -132,7 +132,7 @@
     }
 
     function resolve(deferred, caller, msg, value, opts) {
-      $log.debug([serviceName + caller + ':', msg, opts ? 'with options:' : ''].join(' '), opts || '');
+      if (opts.debug) $log.debug([serviceName + caller + ':', msg, opts ? 'with options:' : ''].join(' '), opts || '');
       var result = {status: 'success', message: msg};
       if (value) result.value = value;
       deferred.resolve(result);
@@ -162,6 +162,7 @@
       opts = opts || {};
       if (opts.frameId) _opts.frameId = opts.frameId;
       if (opts.timeout) _opts.timeout = opts.timeout;
+      _opts.debug = opts.debug || false;
       if (opts.url) {
         _url = opts.url;
       } else {
