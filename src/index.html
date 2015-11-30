@@ -9,8 +9,9 @@
 				$logProvider.debugEnabled(true);
 				CrossDomainStorageProvider.setOptions({
 					url: 'http://localhost:3000/hub.html',
-					timeout: 20000,
-					frameId: 'cross-storage-frame'
+					timeout: 10000,
+					frameId: 'cross-storage-frame',
+					debug: true
 				});
 			}])
 			.run(['CrossDomainStorage', function (CrossDomainStorage) {
