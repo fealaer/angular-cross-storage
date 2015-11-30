@@ -3,8 +3,10 @@
 
   function CrossDomainStorage(url, opts, $q, $log) {
     var vm = this
-      , serviceName = 'angular-cross-storage.CrossDomainStorage.'
       , _storage
+      , _url = url
+      , _opts = opts
+      , serviceName = 'angular-cross-storage.CrossDomainStorage.'
       , connectionDeferred = $q.defer();
 
     vm.connect = connect;
@@ -18,16 +20,16 @@
       angular.element(document).ready(function () {
         if (CrossStorageClient) {
           if (!_storage) {
-            var storage = new CrossStorageClient(url, opts);
+            var storage = new CrossStorageClient(_url, _opts);
             storage
               .onConnect()
               .then(function () {
-                var msg = 'Cross Local Storage Connected to URL ' + url;
-                resolve(connectionDeferred, caller, msg, null, opts);
+                var msg = 'Cross Local Storage Connected to URL ' + _url;
+                resolve(connectionDeferred, caller, msg, null, _opts);
                 _storage = storage;
               })
               .catch(function (err) {
-                var msg = 'Could not connect to the Cross Domain Local Storage Hub on URL ' + url;
+                var msg = 'Could not connect to the Cross Domain Local Storage Hub on URL ' + _url;
                 rejectWithError(connectionDeferred, caller, err, msg);
               });
           }
@@ -132,7 +134,7 @@
     }
 
     function resolve(deferred, caller, msg, value, opts) {
-      if (opts.debug) $log.debug([serviceName + caller + ':', msg, opts ? 'with options:' : ''].join(' '), opts || '');
+      if (_opts.debug) $log.debug([serviceName + caller + ':', msg, opts ? 'with options:' : ''].join(' '), opts || '');
       var result = {status: 'success', message: msg};
       if (value) result.value = value;
       deferred.resolve(result);
