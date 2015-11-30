@@ -4,7 +4,8 @@
   function CrossDomainStorage(url, opts, $q, $log) {
     var vm = this
       , serviceName = 'angular-cross-storage.CrossDomainStorage.'
-      , _storage;
+      , _storage
+      , connectionDeferred = $q.defer();
 
     vm.connect = connect;
     vm.set = setValue;
@@ -13,59 +14,60 @@
     vm.clear = clearAll;
 
     function connect() {
-      var deferred = $q.defer()
-        , caller = 'connect';
+      var caller = 'connect';
       angular.element(document).ready(function () {
         if (CrossStorageClient) {
-          var storage = new CrossStorageClient(url, opts);
-          storage
-            .onConnect()
-            .then(function () {
-              var msg = 'Cross Local Storage Connected to URL ' + url;
-              resolve(deferred, caller, msg, null, opts);
-              _storage = storage;
-            })
-            .catch(function (err) {
-              var msg = 'Could not connect to the Cross Domain Local Storage Hub on URL ' + url;
-              rejectWithError(deferred, caller, err, msg);
-            });
+          if (!_storage) {
+            var storage = new CrossStorageClient(url, opts);
+            storage
+              .onConnect()
+              .then(function () {
+                var msg = 'Cross Local Storage Connected to URL ' + url;
+                resolve(connectionDeferred, caller, msg, null, opts);
+                _storage = storage;
+              })
+              .catch(function (err) {
+                var msg = 'Could not connect to the Cross Domain Local Storage Hub on URL ' + url;
+                rejectWithError(connectionDeferred, caller, err, msg);
+              });
+          }
         } else {
           var err = 'Error: angular-cross-storage module depends on ZenDesk Cross-Storage Library';
-          rejectWithError(deferred, caller, err);
+          rejectWithError(connectionDeferred, caller, err);
         }
       });
-      return deferred.promise;
+      return connectionDeferred.promise;
     }
 
     function setValue(key, value) {
       var deferred = $q.defer()
         , caller = 'set';
-      if (isConnected (caller, deferred)) {
         if (key) {
-          _storage
-            .set(key, value)
-            .then(function () {
-              var msg = 'You have successfully stored value: \'' + value + '\' for key: \'' + key + '\'';
-              resolve(deferred, caller, msg);
-            })
-            .catch(function (err) {
-              var msg = 'Could not store value for key \'' + key + '\'';
-              rejectWithError(deferred, caller, err, msg);
-            });
+          getStorage().then(function (storage) {
+            storage
+              .set(key, value)
+              .then(function () {
+                var msg = 'You have successfully stored value: \'' + value + '\' for key: \'' + key + '\'';
+                resolve(deferred, caller, msg);
+              })
+              .catch(function (err) {
+                var msg = 'Could not store value for key \'' + key + '\'';
+                rejectWithError(deferred, caller, err, msg);
+              });
+          });
         } else {
           var err = 'Error: You must enter a key';
           rejectWithError(deferred, caller, err);
         }
-      }
       return deferred.promise;
     }
 
     function getValue(key) {
       var deferred = $q.defer()
         , caller = 'get';
-      if (isConnected (caller, deferred)) {
-        if (key) {
-          _storage
+      if (key) {
+        getStorage().then(function (storage) {
+          storage
             .get(key)
             .then(function (value) {
               var msg = 'You have successfully retrieved value: \'' + value + '\' for key: \'' + key + '\'';
@@ -75,10 +77,10 @@
               var msg = 'Could not get value for key \'' + key + '\'';
               rejectWithError(deferred, caller, err, msg);
             });
-        } else {
-          var err = 'You must enter a key to get a value';
-          rejectWithError(deferred, caller, err);
-        }
+        });
+      } else {
+        var err = 'You must enter a key to get a value';
+        rejectWithError(deferred, caller, err);
       }
       return deferred.promise;
     }
@@ -86,9 +88,9 @@
     function removeKey(key) {
       var deferred = $q.defer()
         , caller = 'del';
-      if (isConnected (caller, deferred)) {
-        if (key) {
-          _storage
+      if (key) {
+        getStorage().then(function (storage) {
+          storage
             .del(key)
             .then(function () {
               var msg = 'You have successfully removed key \'' + key + '\'';
@@ -98,10 +100,10 @@
               var msg = 'Could not remove the key \'' + key + '\'';
               rejectWithError(deferred, caller, err, msg);
             });
-        } else {
-          var err = 'You must enter a key which you want to remove';
-          rejectWithError(deferred, caller, err);
-        }
+        });
+      } else {
+        var err = 'You must enter a key which you want to remove';
+        rejectWithError(deferred, caller, err);
       }
       return deferred.promise;
     }
@@ -109,8 +111,8 @@
     function clearAll() {
       var deferred = $q.defer()
         , caller = 'clear';
-      if (isConnected (caller, deferred)) {
-        _storage
+      getStorage().then(function (storage) {
+        storage
           .clear()
           .then(function () {
             var msg = 'You have successfully cleared Cross Domain Local Storage';
@@ -120,7 +122,7 @@
             var msg = 'Could not clear Cross Domain Local Storage';
             rejectWithError(deferred, caller, err, msg);
           });
-      }
+      });
       return deferred.promise;
     }
 
@@ -136,21 +138,19 @@
       deferred.resolve(result);
     }
 
-    function isConnected (caller, deferred) {
-      if (!!_storage) {
-        return true;
-      } else {
-        var err = 'Cannot perform any actions with Cross Local Storage -- it is not connected yet';
-        rejectWithError(deferred, caller, err);
-        return false;
-      }
+    function getStorage() {
+      var deferred = $q.defer();
+      vm.connect().then(function () {
+        deferred.resolve(_storage);
+      });
+      return deferred.promise;
     }
   }
 
   CrossDomainStorageProvider.$inject = [];
   /* @ngInject */
   function CrossDomainStorageProvider() {
-    var $log =  angular.injector(['ng']).get('$log');
+    var $log = angular.injector(['ng']).get('$log');
     var vm = this
       , _url
       , _opts = {};
